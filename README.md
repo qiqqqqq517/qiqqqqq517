@@ -2,8 +2,6 @@
 
 <div align="center">
 
-# 644 次贡献 · 23 天最长连续
-
 | 公开仓库 | Star | Fork | 语言 | PR |
 | :--: | :--: | :--: | :--: | :--: |
 | **11** | **28** | 1 | 4 种 | **12** |
@@ -15,6 +13,12 @@
 <div align="center">
 
 ![GitHub Streak](https://streak-stats.demolab.com?user=qiqqqqq517&theme=dark&hide_border=true&locale=zh_Hans&date_format=%5BY%E5%B9%B4%5Dn%E6%9C%88j%E6%97%A5)
+
+</div>
+
+<div align="center">
+
+# 644 次贡献 · 23 天最长连续
 
 </div>
 
