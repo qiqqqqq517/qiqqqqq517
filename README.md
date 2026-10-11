@@ -2,8 +2,6 @@
 
 ## 你好👋，我是 qiqqqqq517
 
-把「自己用得爽」的小工具顺手开源出来 —— 课表 App、桌面端插件、网络工具。
-
 [官网 shangke.asia](https://shangke.asia) ｜ [下载](https://shangke.asia/download) ｜ [反馈 Issues](https://github.com/qiqqqqq517/shangkeschedule/issues)
 
 </div>
@@ -26,7 +24,6 @@
 
 <div align="center">
 
-# 644 次贡献 · 23 天最长连续
 
 </div>
 
