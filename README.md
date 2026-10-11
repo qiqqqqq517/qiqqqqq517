@@ -16,36 +16,33 @@
 
 ---
 
-## 代表项目
-
-### 📅 [上课 · ShangKeSchedule](https://github.com/qiqqqqq517/shangkeschedule)
-
-开源无广告课程表 App。Kotlin Multiplatform + Compose Multiplatform，一份代码跑 Android / Desktop / iOS。
+## 🛠️ 工作状态
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/qiqqqqq517/shangkeschedule/main/picture/today.jpg" width="170" alt="今日课表" />
-<img src="https://raw.githubusercontent.com/qiqqqqq517/shangkeschedule/main/picture/week.jpg" width="170" alt="周课表" />
-<img src="https://raw.githubusercontent.com/qiqqqqq517/shangkeschedule/main/picture/theme-cjk.jpg" width="170" alt="书卷主题" />
+
+| 状态 | 内容 |
+| :--: | :--: |
+| **正在做** | `shangkeschedule` 持续迭代 —— 课表内核优化与桌面小组件体验打磨 |
+| **在做** | `dsh-update-plus` —— DeepSeek Harness 桌面端更新与重启插件 |
+| **在做** | `HypoMux-Custom` —— 多网卡聚合加速的定制构建 |
+| **在做** | `libraryseat` —— 图书馆座位自动化脚本 |
+
 </div>
 
-> **课表 · 日程 · 成绩绩点 · 教务一键导入（160+ 学校脚本）· 情侣课表 · 8 类桌面小组件 · 课程提醒**
+## 📦 我的仓库
 
-`Kotlin` `Compose Multiplatform` `Android 8.0+` `Apache-2.0`
+<div align="center">
 
-[🌐 官网](https://shangke.asia) ｜ [⬇️ 下载](https://shangke.asia/download) ｜ [📦 Releases](https://github.com/qiqqqqq517/shangkeschedule/releases)
+| 仓库 | 说明 | 技术栈 |
+| :-- | :-- | :-- |
+| **[shangkeschedule](https://github.com/qiqqqqq517/shangkeschedule)** ★27<br>上课 · 课程表 App | 开源无广告课程表 App，Kotlin Multiplatform 一份代码跑 Android / Desktop / iOS。课表 · 日程 · 成绩绩点 · 教务一键导入 · 8 类桌面小组件。 [🌐 官网](https://shangke.asia) ｜ [⬇️ 下载](https://shangke.asia/download) | `Kotlin` `Compose` |
+| **[dsh-update-plus](https://github.com/qiqqqqq517/dsh-update-plus)**<br>DSH 更新与重启插件 | DeepSeek Harness 桌面端插件：检测更新并一键重启主机，让插件更新无需手动关窗重开。 | `JavaScript` `DSH` |
+| **[HypoMux-Custom](https://github.com/qiqqqqq517/HypoMux-Custom)**<br>多网卡聚合 · 定制版 | 基于 [HypoMux](https://github.com/Hypostasis-Cat/HypoMux) 的定制构建，融合有线 / WiFi / 热点多路径传输。 [🌐 官网](https://hypomux.com) | `Go` `Windows` |
+| **[libraryseat](https://github.com/qiqqqqq517/libraryseat)** ★1<br>图书馆抢座脚本 | 图书馆座位自动化预约脚本，仅供学习研究用途。 | `Python` `自动化` |
 
-### 🧠 [dsh-auto-memory](https://github.com/qiqqqqq517/dsh-auto-memory)
+</div>
 
-DeepSeek Harness 桌面端的主动联想记忆插件。
-
-> 模型开口前先从记忆里主动唤回；会话结束三层自动沉淀；可复用流程固化成技能。
-> 交接账本 + PLAN 白板让长任务跨窗口续命；水位感知防记忆无节制膨胀。本地优先、模型无关、零依赖。
-
-`JavaScript` `BSD-3-Clause` ｜ [📦 npm](https://www.npmjs.com/package/@a9i5k4/dsh-auto-memory)
-
----
-
-## 技术栈
+## 🧰 技术栈
 
 <div align="center">
 
@@ -55,7 +52,7 @@ DeepSeek Harness 桌面端的主动联想记忆插件。
 
 </div>
 
-## 说明
+## 📌 说明
 
 - 🛠️ 主要方向：Kotlin Multiplatform / Compose 与 JavaScript 插件开发
 - ⚠️ 课表 App 仅供学习使用；相关脚本请遵守各平台使用条款
