@@ -1,4 +1,12 @@
+<div align="center">
+
 ## 你好👋，我是 qiqqqqq517
+
+把「自己用得爽」的小工具顺手开源出来 —— 课表 App、桌面端插件、网络工具。
+
+[官网 shangke.asia](https://shangke.asia) ｜ [下载](https://shangke.asia/download) ｜ [反馈 Issues](https://github.com/qiqqqqq517/shangkeschedule/issues)
+
+</div>
 
 <div align="center">
 
@@ -26,31 +34,40 @@
   <img alt="Dashboard stats of @qiqqqqq517" src="https://next.ossinsight.io/widgets/official/compose-user-dashboard-stats/thumbnail.png?user_id=266937129&image_size=auto&color_scheme=dark" width="771" height="auto">
 </a>
 
-## 📦 我的仓库
-
 <div align="center">
 
-| 仓库 | 数据 | 说明 | 技术栈 |
-| :-- | :--: | :-- | :-- |
-| **[shangkeschedule](https://github.com/qiqqqqq517/shangkeschedule)**<br>上课 · 课程表 App | ★ 27<br>⑂ 1 | 开源无广告课程表 App，Kotlin Multiplatform 一份代码跑 Android / Desktop / iOS。课表 · 日程 · 成绩绩点 · 教务一键导入 · 8 类桌面小组件。<br>[🌐 官网](https://shangke.asia) ｜ [⬇️ 下载](https://shangke.asia/download) ｜ [📦 Releases](https://github.com/qiqqqqq517/shangkeschedule/releases) | `Kotlin` `Compose` |
-| **[libraryseat](https://github.com/qiqqqqq517/libraryseat)**<br>图书馆抢座脚本 | ★ 1 | 图书馆座位自动化预约脚本，仅供学习研究用途。 | `Python` `自动化` |
-| **[dsh-update-plus](https://github.com/qiqqqqq517/dsh-update-plus)**<br>DSH 更新与重启插件 | — | DeepSeek Harness 桌面端插件：检测更新并一键重启主机，让插件更新无需手动关窗重开。 | `JavaScript` `DSH` |
-| **[HypoMux-Custom](https://github.com/qiqqqqq517/HypoMux-Custom)**<br>多网卡聚合 · 定制版 | — | 基于 [HypoMux](https://github.com/Hypostasis-Cat/HypoMux) 的定制构建，融合有线 / WiFi / 热点多路径传输。<br>[🌐 官网](https://hypomux.com) | `Go` `Windows` |
+<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=qiqqqqq517&layout=compact&theme=dark&hide_border=true&langs_count=8" height="150" alt="Top Languages" />
+<img src="https://komarev.com/ghpvc/?username=qiqqqqq517&label=Profile%20views&color=0e75b6&style=flat" height="20" alt="Profile views" />
 
 </div>
 
-## 🛠️ 工作状态
+---
+
+## 📅 [上课 · ShangKeSchedule](https://github.com/qiqqqqq517/shangkeschedule)
+
+开源无广告课程表 App「上课」。Kotlin Multiplatform + Compose Multiplatform，一份代码跑 Android / Desktop / iOS。
 
 <div align="center">
-
-| 状态 | 内容 |
-| :--: | :--: |
-| **正在做** | `shangkeschEDULE` 持续迭代 —— 课表内核优化与桌面小组件体验打磨 |
-| **在做** | `dsh-update-plus` —— DeepSeek Harness 桌面端更新与重启插件 |
-| **在做** | `HypoMux-Custom` —— 多网卡聚合加速的定制构建 |
-| **在做** | `libraryseat` —— 图书馆座位自动化脚本 |
-
+<img src="https://raw.githubusercontent.com/qiqqqqq517/shangkeschedule/main/picture/today.jpg" width="170" alt="今日页" />
+<img src="https://raw.githubusercontent.com/qiqqqqq517/shangkeschedule/main/picture/week.jpg" width="170" alt="周课表" />
+<img src="https://raw.githubusercontent.com/qiqqqqq517/shangkeschedule/main/picture/theme-cjk.jpg" width="170" alt="书卷主题" />
 </div>
+
+> **课表 · 日程 · 成绩绩点 · 教务一键导入（160+ 学校脚本）· 情侣课表 · 8 类桌面小组件 · 课程提醒**
+
+`Kotlin Multiplatform` `Compose Multiplatform` `Android 8.0+` `Apache-2.0` ｜ ★ 27
+
+[🌐 官网](https://shangke.asia) ｜ [⬇️ 下载](https://shangke.asia/download) ｜ [📋 更新日志](https://shangke.asia/changelog) ｜ [📦 Releases](https://github.com/qiqqqqq517/shangkeschedule/releases)
+
+---
+
+## 🛠️ 其他项目
+
+| 项目 | 说明 |
+| :-- | :-- |
+| [dsh-update-plus](https://github.com/qiqqqqq517/dsh-update-plus) | DeepSeek Harness 桌面端插件：多通道更新检查与一键重启。`JavaScript` `MIT` |
+| [HypoMux-Custom](https://github.com/qiqqqqq517/HypoMux-Custom) | 多网卡聚合与网络加速工具定制版（基于 [HypoMux](https://github.com/Hypostasis-Cat/HypoMux) 的修改版）。`Go` `AGPL-3.0` |
+| [libraryseat](https://github.com/qiqqqqq517/libraryseat) | 学习通图书馆自动抢座脚本，仅供技术交流。`Python` `MIT` |
 
 ## 🧰 技术栈
 
@@ -66,6 +83,6 @@
 
 <div align="center">
 
-<sub>反馈 Issues</sub>
+[`qiqqqqq517`](https://github.com/qiqqqqq517) · [课表 App Issues](https://github.com/qiqqqqq517/shangkeschedule/issues)
 
 </div>

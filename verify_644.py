@@ -8,7 +8,7 @@
 做法：重新拉一次 streak 卡确认现值；再用 API 逐项累加尝试对账 644。
 对不上就如实标注口径，不硬凑。
 """
-import json, re, subprocess, sys, os
+import json, re, subprocess, sys, os, time
 sys.stdout.reconfigure(encoding="utf-8")
 
 def sh(*a):
@@ -25,21 +25,34 @@ os.makedirs(os.path.dirname(OUT), exist_ok=True)
 URL = ("https://streak-stats.demolab.com?user=qiqqqqq517&theme=dark"
        "&hide_border=true&locale=zh_Hans"
        "&date_format=%5BY%E5%B9%B4%5Dn%E6%9C%88j%E6%97%A5")
-code = "000"
-for _ in range(3):
-    rc, out, err = sh("curl.exe","-s","-o",OUT,"-w","%{http_code}","-L",
-                      "--max-time","30","-A","Mozilla/5.0",URL)
+
+def svg_texts(p):
+    if not os.path.exists(p):
+        return []
+    svg = open(p, encoding="utf-8", errors="replace").read()
+    t = [re.sub(r"<[^>]+>", "", x).strip()
+         for x in re.findall(r"<text[^>]*>(.*?)</text>", svg, re.S)]
+    return [c for c in t if c]
+
+# 实测：该服务首次请求会返回残缺 SVG（仅 3 个文本节点，缺「最长连续贡献」行）。
+# 必须重试到节点数达完整量级，否则下游判据会拿残缺基准做对账。
+texts, code = [], "000"
+for attempt in range(1, 6):
+    rc, out, err = sh("curl.exe", "-s", "-o", OUT, "-w", "%{http_code}", "-L",
+                      "--max-time", "30", "-A", "Mozilla/5.0", URL)
     code = out.strip() or "000"
-    if code == "200": break
-if code == "200":
-    svg = open(OUT, encoding="utf-8", errors="replace").read()
-    t = [re.sub(r"<[^>]+>","",x).strip() for x in re.findall(r"<text[^>]*>(.*?)</text>",svg,re.S)]
-    t = [c for c in t if c]
-    print("  渲染文本: %s" % " | ".join(t))
-    m = re.search(r"(\d+)\s*\|\s*合计贡献", " | ".join(t))
-    print("  合计贡献 = %s" % (m.group(1) if m else "未解析到"))
+    texts = svg_texts(OUT)
+    if code == "200" and len(texts) >= 8:
+        break
+    time.sleep(2)
+if code == "200" and len(texts) >= 8:
+    print("  渲染文本: %s" % " | ".join(texts))
+    m = re.search(r"(\d+)\s*\|\s*合计贡献", " | ".join(texts))
+    print("  合计贡献 = %s（第 %d 次请求取到完整渲染）" % (m.group(1) if m else "未解析到", attempt))
 else:
-    print("  HTTP %s" % code)
+    print("  ❌ 重试 5 次仍未取到完整渲染（HTTP %s, %d 节点）" % (code, len(texts)))
+    print("     下游 check_readme.py 会因基准残缺而 SKIP 或误判 —— 需先修网络")
+    sys.exit(2)
 
 print("\n=== 2. API 逐项累加对账 ===")
 commits = api("search/commits?q=author:qiqqqqq517&per_page=1")

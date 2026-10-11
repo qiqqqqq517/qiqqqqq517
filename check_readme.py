@@ -1,32 +1,47 @@
-"""profile README 自检 v2。
+"""profile README 自检 v3（整体优化后）。
 
 判据：
-1. 个人信息片段零命中。
-2. 仓库引用只允许自有仓库 —— fork 必须零出现（用户 2026-10-11 明确要求）。
-3. README 里声明的 star 数与线上 API 实测一致（防文档漂移）。
-4. 外链真实可达。
+ 1. 个人信息片段零命中。
+ 2. 仓库引用只允许自有仓库 —— fork 必须零出现。
+ 3. README 声明的 star 数与线上 API 实测一致（无任何声明时 SKIP，不得算 PASS）。
+ 4. 顶部汇总五项数字与线上实测一致。
+ 5. 顶部大字 = streak 卡实时实测值；streak 必须带 date_format。
+ 6. 结构：主推项目唯一（1 个带截图的主力区块）+ 其他项目降级为小表。
+ 7. 功能模块在位（语言统计图 / 访客计数）。
+ 8. 外链可达。本机代理不通但 GitHub 侧可用的服务单独归类（见 camo_verify.py）。
+ 9. 阴性对照：PII / fork / 大字篡改 三类都必须被判 FAIL。
 
-阴性对照：构造含 PII / 含 fork 引用的样本，确认判据真会 FAIL。
+退出码：0 = 全过；1 = 命中缺陷；2 = 拒判（量具自身失效）。
 """
 import json, os, re, subprocess, sys
 sys.stdout.reconfigure(encoding="utf-8")
 
 PATH = r"D:\DSH\DSH Desktop\gh_profile_opt\README.md"
 text = open(PATH, encoding="utf-8").read()
+lines = text.splitlines()
 
 def gh(*a):
     r = subprocess.run(["gh"]+list(a), capture_output=True)
     return json.loads(r.stdout.decode("utf-8")) if r.returncode == 0 else None
 
 repos = gh("api", "users/qiqqqqq517/repos?per_page=100")
+if not repos:
+    print("拒判：GitHub API 不可用，无法取得基准"); sys.exit(2)
+
 FORK_NAMES = {x["name"] for x in repos if x["fork"]}
 OWN_NAMES  = {x["name"] for x in repos if not x["fork"] and not x["archived"]}
 STARS      = {x["name"]: x["stargazers_count"] for x in repos}
+u = gh("api", "users/qiqqqqq517")
+own_all = [x for x in repos if not x["fork"] and not x["archived"]]
+langs = sorted({x["language"] for x in own_all if x["language"]})
 
-fails = []
+# 本机代理会挡、但已用 camo 实测 GitHub 侧 200 的服务（不在此列的一律按 FAIL 处理）
+CAMO_OK = {"github-readme-stats.vercel.app"}
+
+fails, skips = [], []
 
 print("=== 判据1：个人信息 ===")
-for b in ["南通","大学","机械","智能制造","2025","涌淇","本科","大四"]:
+for b in ["南通","大学","机械","智能制造","2025","涌淇","本科","大四","学院"]:
     n = text.count(b)
     if n: fails.append("PII:%s" % b)
     print("  %-4s %-8s 命中 %d" % ("PASS" if n==0 else "FAIL", b, n))
@@ -35,11 +50,10 @@ print("\n=== 判据2：只列自有仓库（fork 必须零出现）===")
 found = set(re.findall(r"github\.com/qiqqqqq517/([A-Za-z0-9._-]+)", text))
 found.discard("")
 fork_hit = found & FORK_NAMES
-own_hit  = found & OWN_NAMES
 extra    = found - OWN_NAMES - FORK_NAMES
-print("  自有仓库集合: %s" % sorted(OWN_NAMES))
-print("  fork 集合:     %s" % sorted(FORK_NAMES))
-print("  README 引用:   %s" % sorted(found))
+print("  自有: %s" % sorted(OWN_NAMES))
+print("  fork: %s" % sorted(FORK_NAMES))
+print("  引用: %s" % sorted(found))
 if fork_hit:
     fails.append("FORK_IN_README:%s" % sorted(fork_hit))
     print("  FAIL 引用了 fork: %s" % sorted(fork_hit))
@@ -55,25 +69,30 @@ if missing:
     fails.append("OWN_NOT_LISTED:%s" % sorted(missing))
     print("  FAIL 自有仓库未列出: %s" % sorted(missing))
 else:
-    print("  PASS 全部自有仓库已列出")
+    print("  PASS 自有仓库均已出现")
 
 print("\n=== 判据3：star 数与线上实测一致 ===")
-for name, cnt in sorted(STARS.items()):
-    if name not in found: continue
-    if cnt == 0: continue
-    m = re.search(r"\*\*\[%s\]\([^)]+\)\*\*.*?★\s*(\d+)" % re.escape(name), text, re.S)
+declared = 0
+for name in sorted(found & OWN_NAMES):
+    # 在该仓库引用所在行 ±10 行窗口内找 ★N
+    idxs = [i for i, l in enumerate(lines) if "qiqqqqq517/%s" % name in l]
+    win = ""
+    for i in idxs:
+        win += "\n".join(lines[max(0, i-1): i+11])
+    m = re.search(r"★\s*(\d+)", win)
     if not m:
-        print("  INFO %-16s 线上 %d star，README 未标注" % (name, cnt)); continue
-    decl = int(m.group(1))
-    ok = decl == cnt
-    if not ok: fails.append("STAR_DRIFT:%s declared=%d real=%d" % (name, decl, cnt))
-    print("  %-4s %-16s 声明★%d 实测%d" % ("PASS" if ok else "FAIL", name, decl, cnt))
+        print("  INFO %-16s 线上 %d star，README 未标注" % (name, STARS[name]))
+        continue
+    declared += 1
+    decl = int(m.group(1)); real = STARS[name]
+    ok = decl == real
+    if not ok: fails.append("STAR_DRIFT:%s declared=%d real=%d" % (name, decl, real))
+    print("  %-4s %-16s 声明★%d 实测%d" % ("PASS" if ok else "FAIL", name, decl, real))
+if declared == 0:
+    skips.append("STAR_DECL_NONE")
+    print("  SKIP 全文无任何 star 声明 —— 本项未判定（空比较不算通过）")
 
-print("\n=== 判据3b：顶部汇总数字与线上实测一致 ===")
-u = gh("api", "users/qiqqqqq517")
-own_all = [x for x in repos if not x["fork"] and not x["archived"]]
-langs = sorted({x["language"] for x in own_all if x["language"]})
-# 顶部汇总表最后一行第5格 = PR 数，与 search API 实测对齐
+print("\n=== 判据4：顶部汇总五项与线上实测一致 ===")
 ROW_RE = (r"\|\s*\*\*(\d+)\*\*\s*\|\s*\*\*(\d+)\*\*\s*\|\s*(\d+)\s*\|"
           r"\s*(\d+)\s*种\s*\|\s*\*\*(\d+)\*\*\s*\|")
 mrow = re.search(ROW_RE, text)
@@ -82,10 +101,7 @@ real_prs = json.loads(subprocess.run(
     capture_output=True).stdout.decode("utf-8"))["total_count"]
 if not mrow:
     fails.append("SUMMARY_ROW_MISSING")
-    print("  FAIL 顶部汇总表未按预期结构解析到")
-    for ln in text.splitlines():
-        if "|" in ln and re.search(r"\d", ln) and "http" not in ln:
-            print("       实际行: %r" % ln.strip()[:80])
+    print("  FAIL 顶部汇总表未解析到")
 else:
     d_repo, d_star, d_fork, d_lang, d_pr = [int(x) for x in mrow.groups()]
     for label, decl, real in [("公开仓库", d_repo, u["public_repos"]),
@@ -97,56 +113,94 @@ else:
         if not ok: fails.append("SUMMARY_DRIFT:%s declared=%d real=%d" % (label, decl, real))
         print("  %-4s %-8s 声明=%-4d 实测=%d" % ("PASS" if ok else "FAIL", label, decl, real))
 
-# 顶部大字「N 次贡献」必须等于 streak 卡实测合计贡献，且 M 天最长连续同源
+print("\n=== 判据5：顶部大字 = streak 实测；streak 带 date_format ===")
 BIG_RE = re.compile(r"^#\s*(\d+)\s*次贡献\s*·\s*(\d+)\s*天最长连续\s*$", re.M)
 bm = BIG_RE.search(text)
 LIVE = os.path.join(os.path.dirname(PATH), "_fmt", "live.svg")
 if not bm:
     fails.append("BIGSTAT_MISSING")
-    print("  FAIL 顶部大字未按「# N 次贡献 · M 天最长连续」结构解析到")
+    print("  FAIL 顶部大字未解析到")
 elif not os.path.exists(LIVE):
-    print("  SKIP streak 实时图缺失（先跑 verify_644.py 抓取），本项未判定")
+    skips.append("STREAK_LIVE_MISSING")
+    print("  SKIP streak 实时图缺失（先跑 verify_644.py），本项未判定")
     print("       大字声明: %s 次贡献 / %s 天最长" % (bm.group(1), bm.group(2)))
 else:
     svg = open(LIVE, encoding="utf-8", errors="replace").read()
     tt = " | ".join(re.sub(r"<[^>]+>", "", x).strip()
                     for x in re.findall(r"<text[^>]*>(.*?)</text>", svg, re.S))
     cm2 = re.search(r"(\d+)\s*\|\s*合计贡献", tt)
-    # 实际文本顺序为「…| 1 | 23 | 最长连续贡献 | …」，数字在标签之前
     lm = re.search(r"\|\s*(\d+)\s*\|\s*最长连续贡献", tt)
-    for label, decl, real in [("合计贡献", int(bm.group(1)),
-                               int(cm2.group(1)) if cm2 else -1),
-                              ("最长连续", int(bm.group(2)),
-                               int(lm.group(1)) if lm else -1)]:
+    for label, decl, real in [("合计贡献", int(bm.group(1)), int(cm2.group(1)) if cm2 else -1),
+                              ("最长连续", int(bm.group(2)), int(lm.group(1)) if lm else -1)]:
         ok = real != -1 and decl == real
         if not ok: fails.append("BIGSTAT_DRIFT:%s declared=%d real=%d" % (label, decl, real))
         print("  %-4s %-8s 大字=%-4d streak实测=%s" %
               ("PASS" if ok else "FAIL", label, decl, real if real != -1 else "解析失败"))
 
-# streak 卡必须显式带 date_format，否则日期只显示月份（实测：无该参数渲染为「3月9日」）
 sm = re.search(r"streak-stats\.demolab\.com\?([^\s)]+)", text)
 if sm:
-    q = sm.group(1)
-    ok = "date_format=" in q
+    ok = "date_format=" in sm.group(1)
     if not ok: fails.append("STREAK_NO_DATEFMT")
     print("  %-4s %-8s %s" % ("PASS" if ok else "FAIL", "streak格式",
           "带 date_format" if ok else "缺 date_format ⇒ 日期只剩月份"))
 
-print("\n=== 判据4：外链可达 ===")
-urls = sorted(set(re.findall(r'https?://[^\s)"\'<]+', text)))
-for u in urls:
+print("\n=== 判据6：结构（主推唯一 + 其他降级）===")
+h2 = [l for l in lines if l.startswith("## ")]
+print("  H2 区块 %d 个: %s" % (len(h2), [h[:34] for h in h2]))
+# 主推区块 = 含 shangkeschedule 且含截图的 H2
+main_blocks = [h for h in h2 if "shangkeschedule" in h.lower()]
+if len(main_blocks) != 1:
+    fails.append("MAIN_BLOCK_COUNT:%d" % len(main_blocks))
+    print("  FAIL 主推项目区块数应为 1，实际 %d" % len(main_blocks))
+else:
+    print("  PASS 主推项目唯一: %s" % main_blocks[0][:40])
+# 其他项目区块必须是小表（无截图）
+other_idx = [i for i, l in enumerate(lines) if l.startswith("## ") and "其他项目" in l]
+if not other_idx:
+    fails.append("OTHER_SECTION_MISSING")
+    print("  FAIL 缺少「其他项目」区块")
+else:
+    oi = other_idx[0]
+    nxt = next((j for j in range(oi+1, len(lines)) if lines[j].startswith("## ")), len(lines))
+    seg = "\n".join(lines[oi:nxt])
+    has_img = bool(re.search(r"<img|!\[", seg))
+    rows = len([l for l in seg.splitlines() if l.startswith("|")]) - 2  # 去掉表头+分隔
+    ok = (not has_img) and 0 < rows <= 4
+    if not ok: fails.append("OTHER_NOT_COMPACT:img=%s rows=%d" % (has_img, rows))
+    print("  %-4s 其他项目: %d 行、无截图=%s（应为小字表格）" %
+          ("PASS" if ok else "FAIL", rows, not has_img))
+
+print("\n=== 判据7：功能模块在位 ===")
+MODULES = [("语言统计图", "github-readme-stats.vercel.app/api/top-langs"),
+           ("访客计数",   "komarev.com/ghpvc"),
+           ("streak 卡",  "streak-stats.demolab.com"),
+           ("ossinsight", "next.ossinsight.io/widgets")]
+for label, needle in MODULES:
+    ok = needle in text
+    if not ok: fails.append("MODULE_MISSING:%s" % label)
+    print("  %-4s %-10s %s" % ("PASS" if ok else "FAIL", label, needle))
+
+print("\n=== 判据8：外链可达 ===")
+urls = sorted(set(re.findall(r'https?://[^\s)"\'<>]+', text)))
+for url in urls:
+    host = re.match(r"https?://([^/]+)", url)
+    host = host.group(1) if host else ""
     codes = []
     for _ in range(3):
         r = subprocess.run(["curl.exe","-s","-o","NUL","-w","%{http_code}","-L",
-                            "--max-time","20","-A","Mozilla/5.0",u], capture_output=True)
+                            "--max-time","20","-A","Mozilla/5.0",url], capture_output=True)
         c = r.stdout.decode("utf-8","replace").strip() or "000"
         codes.append(c)
         if c in ("200","403"): break
-    ok = codes[-1] in ("200","403")
-    if not ok: fails.append("URL:%s %s" % (u, codes))
-    print("  %-4s %-10s %s" % ("PASS" if ok else "FAIL", ",".join(codes), u))
+    if codes[-1] in ("200","403"):
+        print("  PASS %-10s %s" % (codes[-1], url[:88])); continue
+    if host in CAMO_OK:
+        print("  INFO 本机不可达 %s（该服务经 camo 实测 GitHub 侧 200 可用）" % host)
+        continue
+    fails.append("URL:%s %s" % (url, codes))
+    print("  FAIL %-10s %s" % (",".join(codes), url[:88]))
 
-print("\n=== 判据5：阴性对照 ===")
+print("\n=== 判据9：阴性对照 ===")
 s = text + "\n\n毕业于南通大学机械工程学院智能制造工程 2025 级\n[hypo](https://github.com/qiqqqqq517/HypoMux)\n"
 p = [b for b in ["南通","大学","机械","2025"] if b in s]
 fk = set(re.findall(r"github\.com/qiqqqqq517/([A-Za-z0-9._-]+)", s)) & FORK_NAMES
@@ -156,7 +210,6 @@ if not p: fails.append("NEGCTRL_PII")
 if not fk: fails.append("NEGCTRL_FORK")
 print("  %s 判据对 PII 与 fork 均有效" % ("PASS" if p and fk else "FAIL"))
 
-# 大字判据的阴性对照：把 644 改成 999，必须被判 FAIL
 if os.path.exists(LIVE):
     svg = open(LIVE, encoding="utf-8", errors="replace").read()
     tt = " | ".join(re.sub(r"<[^>]+>", "", x).strip()
@@ -170,5 +223,15 @@ if os.path.exists(LIVE):
     print("  %s 大字判据：篡改成 999 后%s被检出" %
           ("PASS" if caught else "FAIL", "" if caught else "未被"))
 
+# 结构判据的阴性对照：把主推项目复制成两份，必须被判 FAIL
+dup = text.replace("## 🛠️ 其他项目", "## 📅 [上课 · ShangKeSchedule](https://github.com/qiqqqqq517/shangkeschedule)\n\n## 🛠️ 其他项目")
+dup_h2 = [l for l in dup.splitlines() if l.startswith("## ")]
+dup_main = [h for h in dup_h2 if "shangkeschedule" in h.lower()]
+caught2 = len(dup_main) != 1
+if not caught2: fails.append("NEGCTRL_STRUCT")
+print("  %s 结构判据：主推区块复制成 2 份后%s被检出" %
+      ("PASS" if caught2 else "FAIL", "" if caught2 else "未被"))
+
 print("\nVERDICT:", "ALL PASS" if not fails else "FAIL -> %s" % fails)
+if skips: print("SKIPPED:", skips)
 sys.exit(0 if not fails else 1)
