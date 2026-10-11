@@ -37,7 +37,8 @@
 <div align="center">
 
 <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=qiqqqqq517&layout=compact&theme=dark&hide_border=true&langs_count=8" height="150" alt="Top Languages" />
-<img src="https://komarev.com/ghpvc/?username=qiqqqqq517&label=Profile%20views&color=0e75b6&style=flat" height="20" alt="Profile views" />
+<img src="https://komarev.com/ghpvc/?username=qiqqqqq517&label=Views&color=0e75b6&style=flat" height="20" alt="Profile views" />
+<img src="https://hits.sh/github.com/qiqqqqq517.svg?label=hits&color=0e75b6" height="20" alt="Hits" />
 
 </div>
 
